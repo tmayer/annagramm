@@ -55,9 +55,14 @@
         <!-- Page content-->
         <div class="container">
             <div class="text-center mt-5">
+
+                <button type="button" class="btn btn-danger" id="reset">
+                   Neustart
+                </button>
                 <button type="button" class="btn btn-warning">
                     <span id="nrAttempts">1</span>. Versuch
                 </button>
+                <br><br>
                 <button type="button" class="btn btn-primary">
                     Wort: <span id="currWord"></span>
                 </button>
@@ -92,7 +97,7 @@
             
             //const origword = "Leseheft";
             var randomNum = Math.floor(Math.random() * wordlist[0].length);
-            origword = wordlist[0][randomNum][0];
+            origword = wordlist[0][randomNum][0].toLowerCase();
             const chars = origword.split("");
             const randChars = chars.sort((a, b) => 0.5 - Math.random());
             var attempts = 1;
@@ -115,7 +120,7 @@
                 })
                 .attr("class", "letter")
                 .attr("class", function(d, i){
-                    var classString = "letter"
+                    var classString = "letter";
                     if(word[i] == origword[i]){
                         classString += " correct";
                     }
@@ -148,7 +153,12 @@
             }
 
             plotWord(randChars);
+
         }
+
+        d3.select("#reset").on("click", function() {
+                startGame();
+        });
 
 
     </script>
