@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Anna Gramm - Löse das Rätsel</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <style>
+            .letter {
+                min-width: 50px;
+                min-height: 50px;
+                border: thin solid black;
+                margin: 10px;
+                font-size: 25pt;
+                text-transform: uppercase;
+                display: inline-block;
+                cursor: pointer;
+                background-color: black;
+                color: white;
+            }
+            .selected {
+                background-color: white;
+                color: black;
+            }
+            .correct {
+                background-color: green;
+                color: white;
+                cursor: not-allowed;
+            }
+            #currWord {
+                text-transform: uppercase;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Responsive navbar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="#">Anna Gramm</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Home</a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page content-->
+        <div class="container">
+            <div class="text-center mt-5">
+                <button type="button" class="btn btn-warning">
+                    <span id="nrAttempts">1</span>. Versuch
+                </button>
+                <button type="button" class="btn btn-primary">
+                    Wort: <span id="currWord"></span>
+                </button>
+            </div>
+            <div class="text-center mt-5" id="game">
+                
+                
+            </div>
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+
+    <script>
+
+        //http://pcai056.informatik.uni-leipzig.de/downloads/etc/legacy/Papers/top1000de.txt
+        //https://codeberg.org/davidak/wortliste/raw/branch/master/wortliste.txt
+        //This loads your file from somewhere
+        var wordlist = [];
+        var origword = "";
+        d3.text('assets/topwords.txt')
+            .then( text => d3.csvParseRows(text) )
+            .then( d => wordlist.push(d) )
+            .then(startGame)
+
+        function startGame(){
+            //console.log(wordlist);
+
+            var attempts = 1;
+            
+            //const origword = "Leseheft";
+            var randomNum = Math.floor(Math.random() * wordlist[0].length);
+            origword = wordlist[0][randomNum][0];
+            const chars = origword.split("");
+            const randChars = chars.sort((a, b) => 0.5 - Math.random());
+            var attempts = 1;
+
+
+            function plotWord(word){
+                d3.select("#game").selectAll("div").remove();
+
+                d3.select("#currWord").html(word.join(""));
+                var selectedPositions = [];
+
+                const index = d3.local();
+                d3.select("#game")
+                .selectAll("div")
+                .data(word)
+                .enter()
+                .append("div")
+                .each(function(d, i) {
+                    index.set(this, i);          
+                })
+                .attr("class", "letter")
+                .attr("class", function(d, i){
+                    var classString = "letter"
+                    if(word[i] == origword[i]){
+                        classString += " correct";
+                    }
+                    return classString;
+                })
+                .on("click", function(d, i){
+                    var idx = index.get(this);
+                    if(word[idx] != origword[idx]){
+                        d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+                        
+                        if(selectedPositions.length == 0){
+                            selectedPositions.push(idx);
+                        }
+                        else if(selectedPositions.length == 1){
+                            selectedPositions.push(idx);
+                            console.log(selectedPositions);
+                            var letter1 = word[selectedPositions[0]];
+                            var letter2 = word[selectedPositions[1]];
+                            word[selectedPositions[1]] = letter1;
+                            word[selectedPositions[0]] = letter2;
+                            attempts += 1;
+                            d3.select("#nrAttempts").html(attempts);
+                            plotWord(word);
+                        }
+                    }
+                })
+                .html(function(d){
+                    return d;
+                });
+            }
+
+            plotWord(randChars);
+        }
+
+
+    </script>
+</html>
